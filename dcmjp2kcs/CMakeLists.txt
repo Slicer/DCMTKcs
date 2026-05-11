@@ -11,6 +11,16 @@ if(DCMTK_WITH_OPENJPEG)
                       "You may need to set OpenJPEG_DIR to the location of OpenJPEGConfig.cmake")
     endif()
   endif()
+  if(TARGET openjp2 AND DEFINED OpenJPEG_DIR)
+    # Re-export the openjp2 target into DCMTKTargets.cmake so downstream consumers
+    # of DCMTK get the openjp2 target automatically without needing to find OpenJPEG.
+    # GenerateCMakeExports.cmake runs via dcmtk_create_install_exports() after all
+    # subdirectories are processed, so we defer this append to run after it.
+    cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}" CALL
+      file APPEND "${CMAKE_BINARY_DIR}/DCMTKTargets.cmake"
+      "\n# OpenJPEG target re-exported by dcmjp2kcs\nif(NOT TARGET openjp2)\n  include(\"${OpenJPEG_DIR}/OpenJPEGTargets.cmake\")\nendif()\n"
+    )
+  endif()
 endif()
 
 # External modules include directories
